@@ -6,6 +6,7 @@ func getMainFileContent() string {
 import (
 	"fmt"
 	"github.com/joho/godotenv"
+
 )
 
 func main() {
@@ -28,4 +29,64 @@ func HomeHandler(c *fiber.Ctx) error {
 	return c.SendString("Hello from Fiber!")
 }
 `
+}
+
+func GetDbPostgresFileContent() string {
+	return `
+	package db
+
+import (
+	"log"
+	"os"
+
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+)
+
+var DB *gorm.DB
+
+func Connect() {
+	dsn := os.Getenv("DATABASE_URL")
+	if dsn == "" {
+		log.Fatal("DATABASE_URL is not set in the environment")
+	}
+
+	var err error
+	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		log.Fatalf("Error connecting to the database: %v\n", err)
+	}
+}
+
+	`
+}
+
+func GetDbSqlserverFileContent() string {
+	return `
+	package db
+
+import (
+	"log"
+	"os"
+
+	"gorm.io/driver/sqlserver"
+	"gorm.io/gorm"
+)
+
+var DB *gorm.DB
+
+func Connect() {
+	dsn := os.Getenv("DATABASE_URL")
+	if dsn == "" {
+		log.Fatal("DATABASE_URL is not set in the environment")
+	}
+
+	var err error
+	DB, err = gorm.Open(sqlserver.Open(dsn), &gorm.Config{})
+	if err != nil {
+		log.Fatalf("Error connecting to the database: %v\n", err)
+	}
+}
+`
+
 }

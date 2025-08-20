@@ -44,53 +44,6 @@ func CreateAndWritetoTheFiles() error {
 		fmt.Println("Error writing to .env file:", err)
 	}
 
-	// Create db.go
-	dbfile, err := Makefile("db", "GOAPI/db")
-	if err != nil {
-		fmt.Println("Error creating db file:", err)
-		return err
-	}
-	defer dbfile.Close()
-
-	_, err = dbfile.WriteString(`package db
-
-import (
-	"fmt"
-	"log"
-
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
-)
-
-var DB *gorm.DB
-
-// InitDB initializes the PostgreSQL database connection
-func InitDB(host, user, password, dbname, port, sslmode string) (*gorm.DB, error) {
-	dsn := fmt.Sprintf(
-		"host=%s user=%s password=%s dbname=%s port=%s sslmode=%s",
-		host, user, password, dbname, port, sslmode,
-	)
-
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-	if err != nil {
-		return nil, fmt.Errorf("failed to connect to database: %v", err)
-	}
-
-	DB = db
-	log.Println("PostgreSQL connection established successfully")
-	return DB, nil
-}
-
-// GetDB returns the database instance
-func GetDB() *gorm.DB {
-	return DB
-}
-`)
-	if err != nil {
-		fmt.Println("Error writing to db file:", err)
-		return err
-	}
-
 	return nil
 }
 
@@ -126,4 +79,45 @@ func MakeDotEnvFile(location string) (*os.File, error) {
 	}
 
 	return file, nil
+}
+
+func MakeDbFile(dbchoice string) error {
+	switch dbchoice {
+	case "Postgres":
+		fmt.Println("Creating Postgres DB file")
+		dbfile, err := Makefile("db", "GOAPI/db")
+		if err != nil {
+			fmt.Println("Error creating db file:", err)
+			return err
+		}
+
+		defer dbfile.Close()
+
+		_, err = dbfile.WriteString(GetDbPostgresFileContent())
+		if err != nil {
+			fmt.Println("Error writing to db file:", err)
+			return err
+		}
+
+	case "SqlServer":
+		fmt.Println("Creating SqlServer DB file")
+		dbfile, err := Makefile("db", "GOAPI/db")
+		if err != nil {
+			fmt.Println("Error creating db file:", err)
+			return err
+		}
+
+		defer dbfile.Close()
+
+		_, err = dbfile.WriteString(GetDbSqlserverFileContent())
+		if err != nil {
+			fmt.Println("Error writing to db file:", err)
+			return err
+		}
+
+	default:
+		fmt.Println("Unknown database choice")
+	}
+
+	return nil
 }
