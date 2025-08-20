@@ -37,6 +37,12 @@ func main() {
 		return
 	}
 
+	err = runCommand("GOAPI", "go", "get", "github.com/joho/godotenv")
+	if err != nil {
+		fmt.Println("Error getting godotenv package:", err)
+		return
+	}
+
 	err = runCommand("GOAPI", "go", "get", "github.com/gofiber/fiber/v2")
 	if err != nil {
 		fmt.Println("Error getting Fiber package:", err)

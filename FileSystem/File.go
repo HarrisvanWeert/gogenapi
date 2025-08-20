@@ -14,16 +14,7 @@ func CreateAndWritetoTheFiles() error {
 	}
 	defer mainfile.Close()
 
-	_, err = mainfile.WriteString(`package main
-
-import (
-	"fmt"
-)
-
-func main() {
-	fmt.Println("Hello, World!")
-}
-`)
+	_, err = mainfile.WriteString(getMainFileContent())
 	if err != nil {
 		fmt.Println("Error writing to file:", err)
 		return err
@@ -37,17 +28,20 @@ func main() {
 	}
 	defer handlersfile.Close()
 
-	_, err = handlersfile.WriteString(`package handlers
-
-import "github.com/gofiber/fiber/v2"
-
-func HomeHandler(c *fiber.Ctx) error {
-	return c.SendString("Hello from Fiber!")
-}
-`)
+	_, err = handlersfile.WriteString(getHandlersFileContent())
 	if err != nil {
 		fmt.Println("Error writing to handlers file:", err)
 		return err
+	}
+
+	dotenvfile, err := MakeDotEnvFile("GOAPI")
+	if err != nil {
+		fmt.Println("Error creating .env file:", err)
+	}
+
+	_, err = dotenvfile.WriteString(`DB_HOST=` + "\n")
+	if err != nil {
+		fmt.Println("Error writing to .env file:", err)
 	}
 
 	// Create db.go
@@ -105,12 +99,28 @@ func Makefile(name string, location string) (*os.File, error) {
 		return nil, fmt.Errorf("name and location cannot be empty")
 	}
 
-	// Ensure directory exists
 	if err := os.MkdirAll(location, 0755); err != nil {
 		return nil, err
 	}
 
 	file, err := os.Create(location + "/" + name + ".go")
+	if err != nil {
+		return nil, err
+	}
+
+	return file, nil
+}
+
+func MakeDotEnvFile(location string) (*os.File, error) {
+	if location == "" {
+		return nil, fmt.Errorf("location cannot be empty")
+	}
+
+	if err := os.MkdirAll(location, 0755); err != nil {
+		return nil, err
+	}
+
+	file, err := os.Create(location + "/.env")
 	if err != nil {
 		return nil, err
 	}
